@@ -1,11 +1,14 @@
-
 import { SaleOrder, PaymentStatus } from '../types';
 
 /**
- * In Production, Vercel will provide VITE_API_URL.
- * In Localhost, it falls back to 3001.
+ * API_BASE_URL resolution:
+ * 1. Checks Vercel/Vite environment variables
+ * 2. Defaults to Localhost for development
  */
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+
+// Initial verification log for the developer console
+console.info(`[System] Initializing Data Service with Backend: ${API_BASE_URL}`);
 
 export const saveOrder = async (order: SaleOrder): Promise<void> => {
   try {

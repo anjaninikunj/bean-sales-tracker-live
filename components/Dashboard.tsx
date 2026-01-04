@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { TrendingUp, Package, CheckCircle2, Clock, ArrowUpRight, Leaf, Users, MapPin } from 'lucide-react';
+import { TrendingUp, Package, CheckCircle2, Clock, ArrowUpRight, Leaf, Users, MapPin, Globe, Server } from 'lucide-react';
 import { getOrders } from '../services/storage';
 import { SaleOrder, PaymentStatus } from '../types';
 
@@ -10,6 +9,7 @@ const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
 const Dashboard: React.FC = () => {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -97,9 +97,17 @@ const Dashboard: React.FC = () => {
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Market Overview</h1>
           <p className="text-slate-500 font-medium mt-1">Operational intelligence for your bean crop enterprise.</p>
         </div>
-        <div className="flex items-center space-x-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
-          <button className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-200">Daily</button>
-          <button className="px-5 py-2.5 text-slate-400 hover:text-slate-600 rounded-xl text-xs font-black uppercase tracking-widest transition-colors">Cumulative</button>
+        <div className="flex flex-col items-end">
+           <div className="flex items-center space-x-2 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 mb-2">
+             <Server size={14} className="text-indigo-600" />
+             <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest truncate max-w-[200px]" title={API_BASE_URL}>
+                API: {API_BASE_URL.replace('https://', '')}
+             </span>
+           </div>
+           <div className="flex items-center space-x-3 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
+             <button className="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-slate-200">Daily</button>
+             <button className="px-5 py-2.5 text-slate-400 hover:text-slate-600 rounded-xl text-xs font-black uppercase tracking-widest transition-colors">Cumulative</button>
+           </div>
         </div>
       </div>
 

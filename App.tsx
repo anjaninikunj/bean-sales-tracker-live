@@ -1,7 +1,7 @@
-// Bean Sales Tracker Pro - Version 1.2.3 (Vercel Build Fix)
+// Bean Sales Tracker Pro - Version 1.2.5 (Connectivity Audit Enabled)
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, ShoppingCart, Leaf, Cloud, CloudOff, Download } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Leaf, Cloud, CloudOff, Download, ShieldCheck } from 'lucide-react';
 import OrderForm from './components/OrderForm';
 import Reports from './components/Reports';
 import Dashboard from './components/Dashboard';
@@ -83,7 +83,7 @@ const Navigation = () => {
             className="w-full flex items-center space-x-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition-colors"
           >
             <Download size={18} />
-            <span className="text-xs font-black uppercase tracking-widest">Install App</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Install App</span>
           </button>
         )}
 
@@ -95,6 +95,11 @@ const Navigation = () => {
             <span className="text-[10px] font-black uppercase tracking-widest">Azure Cloud</span>
             <span className="text-xs font-bold">{dbStatus === 'connected' ? 'Live & Synced' : 'Connecting...'}</span>
           </div>
+        </div>
+
+        <div className="px-4 py-2 bg-slate-50 rounded-lg flex items-center space-x-2">
+           <ShieldCheck size={12} className="text-slate-400" />
+           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">v1.2.5 Stable</span>
         </div>
       </div>
     </nav>
