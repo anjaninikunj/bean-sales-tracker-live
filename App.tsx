@@ -1,5 +1,4 @@
-
-// Bean Sales Tracker Pro - Version 1.2.2 (Build Fix)
+// Bean Sales Tracker Pro - Version 1.2.3 (Vercel Build Fix)
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, ShoppingCart, Leaf, Cloud, CloudOff, Download } from 'lucide-react';
@@ -29,7 +28,6 @@ const SidebarLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: 
 const Navigation = () => {
   const [dbStatus, setDbStatus] = useState<'connected' | 'error' | 'loading'>('loading');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  // Correctly use import.meta.env for Vite frontend
   const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
 
   useEffect(() => {
