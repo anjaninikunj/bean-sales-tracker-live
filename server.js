@@ -3,6 +3,7 @@ import express from 'express';
 import sql from 'mssql';
 import cors from 'cors';
 
+// These will be filled by Render.com Environment Variables
 const dbConfig = {
     user: process.env.DB_USER || 'beanadmin', 
     password: process.env.DB_PASSWORD || 'AmbeFarm@7479#$', 
@@ -26,9 +27,9 @@ const app = express();
 app.set('trust proxy', 1); 
 app.use(express.json());
 
-// Allow your Vercel URL and localhost
+// CORS configuration for production
 app.use(cors({
-  origin: '*', 
+  origin: '*', // For production, replace with your Vercel URL
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 }));
 
@@ -36,10 +37,11 @@ let pool;
 
 async function connectToDatabase() {
     try {
-        console.log('📡 Azure SQL: Connecting to Live Database...');
+        console.log('📡 Azure SQL: Attempting Connection...');
         pool = await sql.connect(dbConfig);
-        console.log('✅ Azure SQL: Connected and Ready');
+        console.log('✅ Azure SQL: Connected');
         
+        // Initialize Table
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BeanSales' AND xtype='U')
             BEGIN
@@ -62,13 +64,14 @@ async function connectToDatabase() {
         `);
     } catch (err) {
         console.error('❌ DB CONNECTION FAILED:', err.message);
+        // Retry connection every 5 seconds
         setTimeout(connectToDatabase, 5000);
     }
 }
 
 app.get('/api/orders', async (req, res) => {
     try {
-        if (!pool) return res.status(503).json({ error: 'Database is still connecting...' });
+        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
         const result = await pool.request().query('SELECT * FROM BeanSales ORDER BY SaleDate DESC, CreatedAt DESC');
         res.json(result.recordset);
     } catch (err) {
@@ -79,7 +82,7 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
     const { product, date, area, weight, quantity, totalPrice, customerName, customerPhone, paymentStatus, notes } = req.body;
     try {
-        if (!pool) return res.status(503).json({ error: 'Database is still connecting...' });
+        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
         await pool.request()
             .input('product', sql.NVarChar, product)
             .input('date', sql.Date, date)

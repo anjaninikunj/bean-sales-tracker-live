@@ -1,20 +1,29 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Bean Sales Tracker Pro - Deployment Guide
 
-# Run and deploy your AI Studio app
+## 1. Local Setup
+1. Copy all files into your folder.
+2. Run `npm install`
+3. Run `npm run dev` (Frontend) and `node server.js` (Backend).
 
-This contains everything you need to run your app locally.
+## 2. GitHub Push
+```bash
+git init
+git add .
+git commit -m "Fix tsconfig for Vercel"
+git push origin main
+```
 
-View your app in AI Studio: https://ai.studio/apps/drive/1G2XONdy70BUC-fmOS_ylL1yLaJILP9A3
+## 3. Render.com (Backend)
+- **Root Directory**: Leave EMPTY.
+- **Start Command**: `node server.js`
+- **Environment Variables**: `DB_USER`, `DB_PASSWORD`, `DB_SERVER`, `DB_NAME`.
 
-## Run Locally
+## 4. Vercel.com (Frontend)
+- **Framework Preset**: Vite
+- **Build Command**: `npm run build`
+- **Output Directory**: `dist`
+- **Environment Variables**:
+   - `VITE_API_URL`: Your Render URL (e.g., `https://bean-sales-api.onrender.com`)
 
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## 5. Troubleshooting Vercel Build
+If you see "TS6305" error, ensure your `tsconfig.json` has `vite.config.ts` in the `exclude` array. This is already updated in the current version.
