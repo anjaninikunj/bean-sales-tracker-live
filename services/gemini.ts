@@ -6,7 +6,7 @@ export const getSalesInsight = async (orders: SaleOrder[]) => {
     return "No sales data available for analysis. Add some records to get started.";
   }
 
-  // Use the required initialization pattern with named parameter
+  // SDK Rule: Initialize with a named parameter
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   
   const salesSummary = orders.map(o => 
