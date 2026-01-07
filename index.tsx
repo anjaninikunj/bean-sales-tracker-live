@@ -1,25 +1,26 @@
-
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-const rootElement = document.getElementById('root');
-if (!rootElement) {
-  throw new Error("Could not find root element to mount to");
-}
+const mountApp = () => {
+  const rootElement = document.getElementById('root');
+  if (!rootElement) return;
 
-const root = ReactDOM.createRoot(rootElement);
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+  const root = ReactDOM.createRoot(rootElement);
+  root.render(
+    <React.StrictMode>
+      <App />
+    </React.StrictMode>
+  );
+};
 
-// PWA Service Worker Registration (Simple)
-if ('serviceWorker' in navigator) {
+mountApp();
+
+// Resilient PWA Service Worker Registration
+if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(err => {
-      console.log('Service worker registration failed: ', err);
+    navigator.serviceWorker.register('./sw.js').catch(err => {
+      console.warn('PWA Service worker skipped:', err);
     });
   });
 }

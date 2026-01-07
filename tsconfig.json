@@ -14,8 +14,23 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "types": ["vite/client", "node"]
   },
-  "include": ["index.tsx", "App.tsx", "types.ts", "constants.ts", "services/**/*.ts", "components/**/*.tsx"],
-  "exclude": ["node_modules", "dist", "vite.config.ts", "server.js", "sw.js"]
+  "include": [
+    "index.tsx", 
+    "App.tsx", 
+    "types.ts", 
+    "constants.ts", 
+    "services/**/*.ts", 
+    "components/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules", 
+    "dist", 
+    "vite.config.ts", 
+    "server.js", 
+    "server_reference.ts",
+    "sw.js"
+  ]
 }

@@ -1,7 +1,5 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-// Removed ClipboardText as it does not exist in lucide-react and was unused. Also removed unused Phone and MapPin.
 import { ShoppingCart, CheckCircle, AlertCircle, User, Tag, CreditCard } from 'lucide-react';
 import { ProductType, AreaType, WeightType, SaleOrder, PaymentStatus } from '../types';
 import { PRODUCTS, AREAS, WEIGHTS } from '../constants';
@@ -59,8 +57,13 @@ const OrderForm: React.FC = () => {
       return;
     }
 
+    // Modern browser check with fallback
+    const orderId = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : `ord-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
     const newOrder: SaleOrder = {
-      id: crypto.randomUUID(),
+      id: orderId,
       product: product as ProductType,
       date,
       customerName,
@@ -117,7 +120,6 @@ const OrderForm: React.FC = () => {
             </div>
           )}
 
-          {/* Section: Customer Info */}
           <div className="space-y-4">
             <h3 className="text-slate-900 font-bold flex items-center space-x-2">
               <User size={18} className="text-emerald-600" />
@@ -147,7 +149,6 @@ const OrderForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Section: Product Info */}
           <div className="space-y-4 pt-4">
             <h3 className="text-slate-900 font-bold flex items-center space-x-2">
               <Tag size={18} className="text-emerald-600" />
@@ -227,7 +228,6 @@ const OrderForm: React.FC = () => {
             </div>
           </div>
 
-          {/* Section: Payment & Notes */}
           <div className="space-y-4 pt-4 border-t border-slate-100">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div className="flex-1">

@@ -1,7 +1,6 @@
-// Bean Sales Tracker Pro - Version 1.2.5 (Connectivity Audit Enabled)
 import React, { useState, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, ShoppingCart, Leaf, Cloud, CloudOff, Download, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, FileText, ShoppingCart, Leaf, Cloud, CloudOff, ShieldCheck } from 'lucide-react';
 import OrderForm from './components/OrderForm';
 import Reports from './components/Reports';
 import Dashboard from './components/Dashboard';
@@ -27,41 +26,37 @@ const SidebarLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: 
 
 const Navigation = () => {
   const [dbStatus, setDbStatus] = useState<'connected' | 'error' | 'loading'>('loading');
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+  
+  const getApiUrl = () => {
+    try {
+      const env = (import.meta as any).env;
+      return (env && env.VITE_API_URL) || 'http://localhost:3001';
+    } catch (e) {
+      return 'http://localhost:3001';
+    }
+  };
+  
+  const API_BASE_URL = getApiUrl();
 
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/health`);
-        const data = await res.json();
-        setDbStatus(data.status === 'connected' ? 'connected' : 'loading');
+        if (res.ok) {
+          const data = await res.json();
+          setDbStatus(data.status === 'connected' ? 'connected' : 'loading');
+        } else {
+          setDbStatus('error');
+        }
       } catch (e) {
         setDbStatus('error');
       }
     };
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    });
-
     checkStatus();
     const interval = setInterval(checkStatus, 30000);
     return () => clearInterval(interval);
   }, [API_BASE_URL]);
-
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the install prompt');
-        }
-        setDeferredPrompt(null);
-      });
-    }
-  };
 
   return (
     <nav className="bg-white border-r border-slate-200 w-64 min-h-screen p-6 hidden md:flex flex-col">
@@ -77,16 +72,6 @@ const Navigation = () => {
       </div>
 
       <div className="space-y-4 pt-6 border-t border-slate-100">
-        {deferredPrompt && (
-          <button 
-            onClick={handleInstallClick}
-            className="w-full flex items-center space-x-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl hover:bg-indigo-100 transition-colors"
-          >
-            <Download size={18} />
-            <span className="text-[10px] font-black uppercase tracking-widest">Install App</span>
-          </button>
-        )}
-
         <div className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
           dbStatus === 'connected' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-400'
         }`}>
@@ -99,7 +84,7 @@ const Navigation = () => {
 
         <div className="px-4 py-2 bg-slate-50 rounded-lg flex items-center space-x-2">
            <ShieldCheck size={12} className="text-slate-400" />
-           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">v1.2.5 Stable</span>
+           <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">v1.3.2 Stable</span>
         </div>
       </div>
     </nav>

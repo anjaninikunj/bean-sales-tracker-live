@@ -1,14 +1,15 @@
 import { SaleOrder, PaymentStatus } from '../types';
 
-/**
- * API_BASE_URL resolution:
- * 1. Checks Vercel/Vite environment variables
- * 2. Defaults to Localhost for development
- */
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+const getApiBaseUrl = (): string => {
+  try {
+    // Safer check for environment variables in different contexts
+    const env = (import.meta as any).env;
+    if (env && env.VITE_API_URL) return env.VITE_API_URL;
+  } catch (e) {}
+  return 'http://localhost:3001';
+};
 
-// Initial verification log for the developer console
-console.info(`[System] Initializing Data Service with Backend: ${API_BASE_URL}`);
+const API_BASE_URL = getApiBaseUrl();
 
 export const saveOrder = async (order: SaleOrder): Promise<void> => {
   try {
@@ -22,25 +23,24 @@ export const saveOrder = async (order: SaleOrder): Promise<void> => {
         throw new Error(errorData.error || 'Server error');
     }
   } catch (error) {
-    console.error("Offline/Sync Warning:", error);
-    // Standard local fallback logic if server is down
+    console.warn("[Storage] Offline Mode Active:", error);
     const orders = getOrdersSync();
     orders.push(order);
-    localStorage.setItem('bean_sales_offline', JSON.stringify(orders));
+    localStorage.setItem('bean_sales_cache', JSON.stringify(orders));
   }
 };
 
 export const getOrders = async (): Promise<SaleOrder[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/orders`);
-    if (!response.ok) throw new Error('Unreachable');
+    if (!response.ok) throw new Error('Network offline');
     const data = await response.json();
     
     return data.map((o: any) => ({
       id: o.Id || o.id,
       product: o.Product || o.product,
       date: o.SaleDate ? new Date(o.SaleDate).toISOString().split('T')[0] : o.date,
-      customerName: o.CustomerName || o.customerName || 'Walk-in Customer',
+      customerName: o.CustomerName || o.customerName || 'Anonymous',
       customerPhone: o.CustomerPhone || o.customerPhone,
       area: o.Area || o.area,
       weight: o.Weight || o.weight,
@@ -57,13 +57,17 @@ export const getOrders = async (): Promise<SaleOrder[]> => {
 };
 
 const getOrdersSync = (): SaleOrder[] => {
-  const data = localStorage.getItem('bean_sales_offline');
-  return data ? JSON.parse(data) : [];
+  try {
+    const data = localStorage.getItem('bean_sales_cache');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    return [];
+  }
 };
 
 export const clearAllOrders = async () => {
   try {
     await fetch(`${API_BASE_URL}/api/orders`, { method: 'DELETE' });
   } catch (err) {}
-  localStorage.removeItem('bean_sales_offline');
+  localStorage.removeItem('bean_sales_cache');
 };
