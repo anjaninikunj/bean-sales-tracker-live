@@ -4,7 +4,7 @@ const getApiBaseUrl = (): string => {
   // Use environment variable from Vercel/Vite, or fallback to local
   const envUrl = (import.meta as any).env?.VITE_API_URL;
   if (envUrl) return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
-  
+
   return 'http://localhost:3001';
 };
 
@@ -18,8 +18,8 @@ export const saveOrder = async (order: SaleOrder): Promise<void> => {
       body: JSON.stringify(order),
     });
     if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Server error');
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Server error');
     }
   } catch (error) {
     console.warn("[Storage] Offline Mode Active:", error);
@@ -34,7 +34,7 @@ export const getOrders = async (): Promise<SaleOrder[]> => {
     const response = await fetch(`${API_BASE_URL}/api/orders`);
     if (!response.ok) throw new Error('Network offline');
     const data = await response.json();
-    
+
     return data.map((o: any) => ({
       id: o.Id || o.id,
       product: o.Product || o.product,
@@ -67,6 +67,16 @@ const getOrdersSync = (): SaleOrder[] => {
 export const clearAllOrders = async () => {
   try {
     await fetch(`${API_BASE_URL}/api/orders`, { method: 'DELETE' });
-  } catch (err) {}
+  } catch (err) { }
   localStorage.removeItem('bean_sales_cache');
+};
+
+export const deleteOrder = async (id: string) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders/${id}`, { method: 'DELETE' });
+    if (!response.ok) throw new Error('Failed to delete');
+  } catch (err) {
+    // Handle offline delete logic if needed
+    console.warn("Offline delete not fully supported yet", err);
+  }
 };

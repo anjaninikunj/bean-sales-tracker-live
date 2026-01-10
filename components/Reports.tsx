@@ -9,7 +9,8 @@ import { getSalesInsight } from '../services/gemini';
 const Reports: React.FC = () => {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterDate, setFilterDate] = useState('');
+  // Default to today's date
+  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterArea, setFilterArea] = useState<string>('All');
   const [filterProduct, setFilterProduct] = useState<string>('All');
   const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -38,7 +39,7 @@ const Reports: React.FC = () => {
     const matchesArea = filterArea === 'All' || order.area === filterArea;
     const matchesProduct = filterProduct === 'All' || order.product === filterProduct;
     const matchesStatus = filterStatus === 'All' || order.paymentStatus === filterStatus;
-    const matchesSearch = !searchTerm || 
+    const matchesSearch = !searchTerm ||
       order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (order.notes && order.notes.toLowerCase().includes(searchTerm.toLowerCase()));
     return matchesDate && matchesArea && matchesProduct && matchesStatus && matchesSearch;
@@ -69,12 +70,12 @@ const Reports: React.FC = () => {
       o.totalPrice,
       o.paymentStatus
     ]);
-    
+
     const csvContent = [
       headers.join(','),
       ...rows.map(r => r.join(','))
     ].join('\n');
-    
+
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -101,14 +102,14 @@ const Reports: React.FC = () => {
           <p className="text-slate-500 font-medium">Historical transaction records and automated market auditing.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button 
+          <button
             onClick={fetchOrders}
             className="p-3.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-2xl transition-all"
             title="Reload Records"
           >
             <RefreshCcw size={22} className={loading ? 'animate-spin' : ''} />
           </button>
-          <button 
+          <button
             onClick={downloadCSV}
             disabled={filteredOrders.length === 0}
             className="bg-white text-slate-700 border border-slate-200 px-6 py-3.5 rounded-2xl hover:border-emerald-200 hover:text-emerald-700 transition flex items-center space-x-2 disabled:opacity-50 font-black text-xs uppercase tracking-widest shadow-sm"
@@ -116,7 +117,7 @@ const Reports: React.FC = () => {
             <FileSpreadsheet size={16} />
             <span>CSV Export</span>
           </button>
-          <button 
+          <button
             onClick={handleGenerateInsight}
             disabled={loadingAi || orders.length === 0}
             className="bg-indigo-600 text-white px-6 py-3.5 rounded-2xl hover:bg-indigo-700 transition flex items-center space-x-2 disabled:opacity-50 font-black text-xs uppercase tracking-widest shadow-lg shadow-indigo-100"
@@ -124,7 +125,7 @@ const Reports: React.FC = () => {
             <Sparkles size={16} />
             <span>{loadingAi ? 'Analyzing...' : 'AI Intelligence'}</span>
           </button>
-          <button 
+          <button
             onClick={handleClear}
             className="bg-rose-50 text-rose-600 border border-rose-100 px-6 py-3.5 rounded-2xl hover:bg-rose-100 transition flex items-center space-x-2 font-black text-xs uppercase tracking-widest"
           >
@@ -138,7 +139,7 @@ const Reports: React.FC = () => {
         <div className="bg-gradient-to-br from-indigo-900 via-slate-900 to-emerald-950 p-10 rounded-[3rem] text-white shadow-2xl relative overflow-hidden animate-in zoom-in-95 duration-500 group">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-indigo-500/10 rounded-full -ml-32 -mb-32 blur-3xl"></div>
-          
+
           <div className="relative z-10">
             <div className="flex items-center space-x-3 mb-6">
               <div className="p-2.5 bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-900/40">
@@ -199,7 +200,7 @@ const Reports: React.FC = () => {
           </select>
         </div>
         <div className="relative">
-           <Filter size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <Filter size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
@@ -226,6 +227,7 @@ const Reports: React.FC = () => {
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Crop Specification</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Volume (Pkgs)</th>
                 <th className="px-8 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Total Payable</th>
+                <th className="px-4 py-6 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -237,7 +239,7 @@ const Reports: React.FC = () => {
                         <Search size={48} className="opacity-20" />
                       </div>
                       <p className="text-xl font-black tracking-tight text-slate-400">No matching records found.</p>
-                      <button 
+                      <button
                         onClick={() => { setFilterDate(''); setFilterArea('All'); setFilterProduct('All'); setFilterStatus('All'); setSearchTerm(''); }}
                         className="mt-6 text-emerald-600 font-black text-xs uppercase tracking-widest hover:text-emerald-700 underline underline-offset-8 transition-all"
                       >
@@ -266,11 +268,10 @@ const Reports: React.FC = () => {
                       </td>
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-2">
-                          <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${
-                            order.product === 'Papadi' ? 'bg-emerald-50 text-emerald-700' : 
+                          <div className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider ${order.product === 'Papadi' ? 'bg-emerald-50 text-emerald-700' :
                             order.product === 'Tuver' ? 'bg-amber-50 text-amber-700' :
-                            'bg-indigo-50 text-indigo-700'
-                          }`}>
+                              'bg-indigo-50 text-indigo-700'
+                            }`}>
                             {order.product}
                           </div>
                           <div className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-wider">
@@ -282,18 +283,32 @@ const Reports: React.FC = () => {
                       <td className="px-8 py-6 text-right">
                         <div className="flex flex-col items-end">
                           <span className="text-lg font-black text-slate-900">₹{order.totalPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 ${
-                            order.paymentStatus === PaymentStatus.PAID ? 'text-emerald-500' : 'text-rose-500'
-                          }`}>
+                          <span className={`text-[9px] font-black uppercase tracking-[0.2em] mt-1 ${order.paymentStatus === PaymentStatus.PAID ? 'text-emerald-500' : 'text-rose-500'
+                            }`}>
                             {order.paymentStatus}
                           </span>
                         </div>
+                      </td>
+                      <td className="px-4 py-6 text-center">
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm('Delete this order?')) {
+                              await import('../services/storage').then(m => m.deleteOrder(order.id!));
+                              fetchOrders();
+                            }
+                          }}
+                          className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                          title="Delete Order"
+                        >
+                          <Trash2 size={16} />
+                        </button>
                       </td>
                     </tr>
                   ))}
                   {filteredOrders.length > 0 && (
                     <tr className="bg-slate-900 text-white font-black sticky bottom-0">
-                      <td colSpan={3} className="px-8 py-8 text-xs uppercase tracking-[0.3em] text-slate-400">Audit Ledger Summary</td>
+                      <td colSpan={4} className="px-8 py-8 text-xs uppercase tracking-[0.3em] text-slate-400">Audit Ledger Summary</td>
                       <td className="px-8 py-8 text-xl text-right">{totals.qty} <span className="text-[10px] opacity-40">PKGS</span></td>
                       <td className="px-8 py-8 text-2xl text-emerald-400 text-right">₹{totals.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
                     </tr>

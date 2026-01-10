@@ -5,16 +5,16 @@ import cors from 'cors';
 
 // These will be filled by Render.com Environment Variables
 const dbConfig = {
-    user: process.env.DB_USER || 'beanadmin', 
-    password: process.env.DB_PASSWORD || 'AmbeFarm@7479#$', 
-    server: process.env.DB_SERVER || 'beantracker-server-ambe-1018.database.windows.net',            
+    user: process.env.DB_USER || 'beanadmin',
+    password: process.env.DB_PASSWORD || 'AmbeFarm@7479#$',
+    server: process.env.DB_SERVER || 'beantracker-server-ambe-1018.database.windows.net',
     database: process.env.DB_NAME || 'beantracker-server-ambe',
     port: 1433,
     options: {
-        encrypt: true, 
+        encrypt: true,
         trustServerCertificate: false,
         enableArithAbort: true,
-        connectTimeout: 30000 
+        connectTimeout: 30000
     },
     pool: {
         max: 10,
@@ -24,13 +24,13 @@ const dbConfig = {
 };
 
 const app = express();
-app.set('trust proxy', 1); 
+app.set('trust proxy', 1);
 app.use(express.json());
 
 // CORS configuration for production
 app.use(cors({
-  origin: '*', // For production, replace with your Vercel URL
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+    origin: '*', // For production, replace with your Vercel URL
+    methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
 }));
 
 let pool;
@@ -40,7 +40,7 @@ async function connectToDatabase() {
         console.log('📡 Azure SQL: Attempting Connection...');
         pool = await sql.connect(dbConfig);
         console.log('✅ Azure SQL: Connected');
-        
+
         // Initialize Table
         await pool.request().query(`
             IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BeanSales' AND xtype='U')
@@ -100,6 +100,31 @@ app.post('/api/orders', async (req, res) => {
                 VALUES (@product, @date, @customerName, @customerPhone, @area, @weight, @quantity, @totalPackages, @totalPrice, @paymentStatus, @notes)
             `);
         res.status(201).json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Delete a single order
+app.delete('/api/orders/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        await pool.request()
+            .input('id', sql.UniqueIdentifier, id)
+            .query('DELETE FROM BeanSales WHERE Id = @id');
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Clear all orders (Reset Database)
+app.delete('/api/orders', async (req, res) => {
+    try {
+        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        await pool.request().query('DELETE FROM BeanSales');
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
