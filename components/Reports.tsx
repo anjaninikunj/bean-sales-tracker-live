@@ -127,7 +127,7 @@ const Reports: React.FC = () => {
           </button>
           <button
             onClick={handleClear}
-            className="bg-rose-50 text-rose-600 border border-rose-100 px-6 py-3.5 rounded-2xl hover:bg-rose-100 transition flex items-center space-x-2 font-black text-xs uppercase tracking-widest"
+            className="hidden bg-rose-50 text-rose-600 border border-rose-100 px-6 py-3.5 rounded-2xl hover:bg-rose-100 transition flex items-center space-x-2 font-black text-xs uppercase tracking-widest"
           >
             <Trash2 size={16} />
             <span>Reset Database</span>
