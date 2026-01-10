@@ -293,9 +293,31 @@ const Reports: React.FC = () => {
                         <button
                           onClick={async (e) => {
                             e.stopPropagation();
+                            const newStatus = order.paymentStatus === PaymentStatus.PAID ? PaymentStatus.PENDING : PaymentStatus.PAID;
+                            if (confirm(`Change payment status to ${newStatus}?`)) {
+                              try {
+                                await import('../services/storage').then(m => m.updateOrder({ ...order, paymentStatus: newStatus }));
+                                fetchOrders();
+                              } catch (err: any) {
+                                alert('Update failed. Ensure server is running. ' + err.message);
+                              }
+                            }
+                          }}
+                          className={`p-2 rounded-lg transition-colors mr-2 ${order.paymentStatus === PaymentStatus.PAID ? 'text-emerald-500 hover:bg-emerald-50' : 'text-amber-500 hover:bg-amber-50'}`}
+                          title="Toggle Payment Status"
+                        >
+                          <RefreshCcw size={16} />
+                        </button>
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
                             if (confirm('Delete this order?')) {
-                              await import('../services/storage').then(m => m.deleteOrder(order.id!));
-                              fetchOrders();
+                              try {
+                                await import('../services/storage').then(m => m.deleteOrder(order.id!));
+                                fetchOrders();
+                              } catch (err: any) {
+                                alert('Failed to delete: ' + err.message);
+                              }
                             }
                           }}
                           className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"

@@ -80,3 +80,17 @@ export const deleteOrder = async (id: string) => {
     console.warn("Offline delete not fully supported yet", err);
   }
 };
+
+export const updateOrder = async (order: SaleOrder) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/orders/${order.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order),
+    });
+    if (!response.ok) throw new Error('Failed to update');
+  } catch (err) {
+    console.warn("Offline update not fully supported yet", err);
+    throw err;
+  }
+};

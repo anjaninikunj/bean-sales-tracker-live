@@ -27,10 +27,17 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(express.json());
 
+// Serve static files from the React build
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use(express.static(path.join(__dirname, 'dist')));
+
 // CORS configuration for production
 app.use(cors({
     origin: '*', // For production, replace with your Vercel URL
-    methods: ['GET', 'POST', 'DELETE', 'OPTIONS']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
 let pool;
@@ -105,6 +112,46 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
+// Update an existing order
+app.put('/api/orders/:id', async (req, res) => {
+    const { id } = req.params;
+    const { product, date, area, weight, quantity, totalPrice, customerName, customerPhone, paymentStatus, notes } = req.body;
+    try {
+        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        await pool.request()
+            .input('id', sql.UniqueIdentifier, id)
+            .input('product', sql.NVarChar, product)
+            .input('date', sql.Date, date)
+            .input('customerName', sql.NVarChar, customerName)
+            .input('customerPhone', sql.NVarChar, customerPhone)
+            .input('area', sql.NVarChar, area)
+            .input('weight', sql.NVarChar, weight)
+            .input('quantity', sql.Int, quantity)
+            .input('totalPackages', sql.Int, quantity)
+            .input('totalPrice', sql.Decimal(18, 2), totalPrice)
+            .input('paymentStatus', sql.NVarChar, paymentStatus)
+            .input('notes', sql.NVarChar, notes)
+            .query(`
+                UPDATE BeanSales
+                SET Product = @product,
+                    SaleDate = @date,
+                    CustomerName = @customerName,
+                    CustomerPhone = @customerPhone,
+                    Area = @area,
+                    Weight = @weight,
+                    Quantity = @quantity,
+                    TotalPackages = @totalPackages,
+                    TotalPrice = @totalPrice,
+                    PaymentStatus = @paymentStatus,
+                    Notes = @notes
+                WHERE Id = @id
+            `);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Delete a single order
 app.delete('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
@@ -132,6 +179,11 @@ app.delete('/api/orders', async (req, res) => {
 
 app.get('/health', (req, res) => {
     res.status(200).json({ status: pool ? 'connected' : 'connecting' });
+});
+
+// Handle React Routing, return all requests to React app
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
