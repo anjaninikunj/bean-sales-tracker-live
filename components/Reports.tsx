@@ -165,7 +165,7 @@ const Reports: React.FC = () => {
             placeholder="Search Clients..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold transition-all placeholder:text-slate-300"
+            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 placeholder:text-slate-400 transition-all"
           />
         </div>
         <div className="relative">
@@ -174,7 +174,7 @@ const Reports: React.FC = () => {
             type="date"
             value={filterDate}
             onChange={(e) => setFilterDate(e.target.value)}
-            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold transition-all"
+            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all"
           />
         </div>
         <div className="relative">
@@ -182,7 +182,7 @@ const Reports: React.FC = () => {
           <select
             value={filterProduct}
             onChange={(e) => setFilterProduct(e.target.value)}
-            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold transition-all appearance-none"
+            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all appearance-none"
           >
             <option value="All">All Varieties</option>
             {PRODUCTS.map(p => <option key={p} value={p}>{p}</option>)}
@@ -193,7 +193,7 @@ const Reports: React.FC = () => {
           <select
             value={filterArea}
             onChange={(e) => setFilterArea(e.target.value)}
-            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold transition-all appearance-none"
+            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all appearance-none"
           >
             <option value="All">All Regions</option>
             {AREAS.map(a => <option key={a} value={a}>{a}</option>)}
@@ -204,7 +204,7 @@ const Reports: React.FC = () => {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold transition-all appearance-none"
+            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all appearance-none"
           >
             <option value="All">Settlement Status</option>
             {Object.values(PaymentStatus).map(s => <option key={s} value={s}>{s}</option>)}
