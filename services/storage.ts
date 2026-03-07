@@ -1,6 +1,11 @@
 import { SaleOrder, PaymentStatus } from '../types';
 
 const getApiBaseUrl = (): string => {
+  // If running locally, prioritize the local API server on 3001
+  if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+    return 'http://localhost:3001';
+  }
+
   // Use environment variable from Vercel/Vite, or fallback to local
   const envUrl = (import.meta as any).env?.VITE_API_URL;
   if (envUrl) return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;

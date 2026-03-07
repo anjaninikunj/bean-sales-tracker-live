@@ -71,8 +71,9 @@ async function connectToDatabase() {
         `);
     } catch (err) {
         console.error('❌ DB CONNECTION FAILED:', err.message);
-        // Retry connection every 5 seconds
-        setTimeout(connectToDatabase, 5000);
+        console.warn('💡 HELP: Check your Azure SQL Firewall (Allow your IP) and ensure the database is not paused/suspended.');
+        // Retry connection every 10 seconds
+        setTimeout(connectToDatabase, 10000);
     }
 }
 

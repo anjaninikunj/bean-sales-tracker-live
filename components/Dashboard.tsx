@@ -10,13 +10,17 @@ const Dashboard: React.FC = () => {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
   
-  const getApiUrl = () => {
-    try {
-      const env = (import.meta as any).env;
-      return (env && env.VITE_API_URL) || 'http://localhost:3001';
-    } catch (e) {
+  const getApiUrl = (): string => {
+    // If running locally, prioritize the local API server on 3001
+    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       return 'http://localhost:3001';
     }
+  
+    // Use environment variable from Vercel/Vite, or fallback to local
+    const envUrl = (import.meta as any).env?.VITE_API_URL;
+    if (envUrl) return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+  
+    return 'http://localhost:3001';
   };
   
   const API_BASE_URL = getApiUrl();
@@ -85,6 +89,29 @@ const Dashboard: React.FC = () => {
       </div>
     </div>
   );
+
+  if (orders.length === 0 && !loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 animate-in fade-in duration-700">
+        <div className="p-10 bg-white rounded-[3rem] shadow-sm border border-slate-100 flex flex-col items-center">
+          <div className="p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] mb-6">
+            <Package size={48} className="opacity-40" />
+          </div>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">No Market Transactions Found</h2>
+          <p className="text-slate-500 max-w-sm mt-3 font-medium">Your historical ledger is currently empty. Start by logging a new bean sales record to populate your analytics dashboard.</p>
+          <a
+            href="/#/order"
+            className="mt-8 bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg shadow-emerald-100"
+          >
+            Create First Sale Entry
+          </a>
+          <div className="mt-8 pt-8 border-t border-slate-50 w-full flex items-center justify-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <span className="flex items-center"><Server size={10} className="mr-1" /> API: {API_BASE_URL.replace('https://', '')}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -3,7 +3,8 @@
 ## 1. Local Setup
 1. Copy all files into your folder.
 2. Run `npm install`
-3. Run `npm run dev` (Frontend) and `node server.js` (Backend).
+3. Run `npm run dev-all` (Starts both Server + Dashboard).
+4. Open [http://localhost:3000](http://localhost:3000)
 
 ## 2. GitHub Push
 ```bash
