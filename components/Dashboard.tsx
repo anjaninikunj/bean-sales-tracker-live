@@ -9,18 +9,14 @@ const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
 const Dashboard: React.FC = () => {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorStatus, setErrorStatus] = useState<string | null>(null);
   
   const getApiUrl = (): string => {
-    // If running locally, prioritize the local API server on 3001
-    if (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
-      return 'http://localhost:3001';
-    }
-  
-    // Use environment variable from Vercel/Vite, or fallback to local
-    const envUrl = (import.meta as any).env?.VITE_API_URL;
-    if (envUrl) return envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
-  
-    return 'http://localhost:3001';
+    const env = (import.meta as any).env;
+    if (env && env.VITE_API_URL) return env.VITE_API_URL;
+    
+    // Defaulting to laptop IP for final localized test
+    return 'http://10.94.108.148:3001';
   };
   
   const API_BASE_URL = getApiUrl();
@@ -30,8 +26,10 @@ const Dashboard: React.FC = () => {
       try {
         const data = await getOrders();
         setOrders(data);
-      } catch (err) {
+        if (data.length === 0) setErrorStatus("Database empty or connection failed.");
+      } catch (err: any) {
         console.error('Failed to load dashboard data:', err);
+        setErrorStatus(err.message || "Connection Error");
       } finally {
         setLoading(false);
       }
@@ -97,16 +95,27 @@ const Dashboard: React.FC = () => {
           <div className="p-6 bg-emerald-50 text-emerald-600 rounded-[2rem] mb-6">
             <Package size={48} className="opacity-40" />
           </div>
-          <h2 className="text-2xl font-black text-slate-800 tracking-tight">No Market Transactions Found</h2>
-          <p className="text-slate-500 max-w-sm mt-3 font-medium">Your historical ledger is currently empty. Start by logging a new bean sales record to populate your analytics dashboard.</p>
+          <h2 className="text-2xl font-black text-slate-800 tracking-tight">Market Dashboard</h2>
+          <div className="flex items-center space-x-2 my-2 bg-emerald-50 px-4 py-2 rounded-full">
+            <div className={`w-2 h-2 ${errorStatus ? 'bg-red-500' : 'bg-emerald-500'} rounded-full animate-ping`}></div>
+            <span className={`${errorStatus ? 'text-red-700' : 'text-emerald-700'} font-black text-[10px] tracking-widest uppercase`}>
+              {errorStatus ? `CONNECTION ERROR: ${errorStatus}` : 'Hotspot Link Version 1.7'}
+            </span>
+          </div>
+          <p className="text-slate-500 max-w-sm mt-3 font-medium text-center">
+            {errorStatus ? "Please ensure npm start is running and your phone is on the hotspot." : "If you see no records, click the button below to retry the connection."}
+          </p>
           <a
             href="/#/order"
             className="mt-8 bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg shadow-emerald-100"
           >
             Create First Sale Entry
           </a>
-          <div className="mt-8 pt-8 border-t border-slate-50 w-full flex items-center justify-center space-x-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
-            <span className="flex items-center"><Server size={10} className="mr-1" /> API: {API_BASE_URL.replace('https://', '')}</span>
+          <div className="mt-8 pt-8 border-t border-slate-50 w-full flex flex-col items-center justify-center space-y-2">
+            <span className="flex items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
+               <Server size={10} className="mr-1" /> ACTIVE IP: 10.94.108.148:3001
+            </span>
+            <span className="text-[8px] font-bold text-slate-300 uppercase">RETRY SERVER: NPM START</span>
           </div>
         </div>
       </div>

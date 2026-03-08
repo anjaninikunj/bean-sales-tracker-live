@@ -78,11 +78,14 @@ async function connectToDatabase() {
 }
 
 app.get('/api/orders', async (req, res) => {
+    console.log(`📱 [MOBILE] GET Request from: ${req.ip}`);
     try {
         if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
         const result = await pool.request().query('SELECT * FROM BeanSales ORDER BY SaleDate DESC, CreatedAt DESC');
+        console.log(`✅ [MOBILE] Found ${result.recordset.length} records. Sending to phone...`);
         res.json(result.recordset);
     } catch (err) {
+        console.error('❌ [MOBILE] Fetch Error:', err.message);
         res.status(500).json({ error: err.message });
     }
 });

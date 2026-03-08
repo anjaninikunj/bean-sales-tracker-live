@@ -28,12 +28,9 @@ const Navigation = () => {
   const [dbStatus, setDbStatus] = useState<'connected' | 'error' | 'loading'>('loading');
   
   const getApiUrl = () => {
-    try {
-      const env = (import.meta as any).env;
-      return (env && env.VITE_API_URL) || 'http://localhost:3001';
-    } catch (e) {
-      return 'http://localhost:3001';
-    }
+    // HARDCODED FOR MOBILE HOTSPOT CONNECTIVITY
+    // Laptop IP: 10.94.108.148
+    return 'http://10.94.108.148:3001';
   };
   
   const API_BASE_URL = getApiUrl();

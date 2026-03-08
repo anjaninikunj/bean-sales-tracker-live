@@ -1,0 +1,62 @@
+[
+  {
+    "Id": "35E26982-2721-4A31-98BB-72E5C42B50A5",
+    "Product": "Papadi",
+    "SaleDate": "2026-01-10T00:00:00.000Z",
+    "CustomerName": "Jack Smith",
+    "CustomerPhone": null,
+    "Area": "Surat",
+    "Weight": "500g",
+    "Quantity": 5,
+    "TotalPackages": 5,
+    "TotalPrice": 1250,
+    "PaymentStatus": "Paid",
+    "Notes": null,
+    "CreatedAt": "2026-01-10T07:45:57.366Z"
+  },
+  {
+    "Id": "ECC772AA-08B3-42F8-ACE5-A05B7D40B922",
+    "Product": "Choli",
+    "SaleDate": "2026-03-07T00:00:00.000Z",
+    "CustomerName": "Piyu",
+    "CustomerPhone": "",
+    "Area": "Pal",
+    "Weight": "1kg",
+    "Quantity": 1,
+    "TotalPackages": 1,
+    "TotalPrice": 520,
+    "PaymentStatus": "Paid",
+    "Notes": "",
+    "CreatedAt": "2026-03-07T06:21:42.143Z"
+  },
+  {
+    "Id": "B5F46E09-8F56-4CBA-8D9C-AF316B4A913B",
+    "Product": "Tuver",
+    "SaleDate": "2026-01-10T00:00:00.000Z",
+    "CustomerName": "Nikunj ",
+    "CustomerPhone": null,
+    "Area": "Surat",
+    "Weight": "1kg",
+    "Quantity": 250,
+    "TotalPackages": 250,
+    "TotalPrice": 750,
+    "PaymentStatus": "Paid",
+    "Notes": null,
+    "CreatedAt": "2026-01-10T08:58:28.760Z"
+  },
+  {
+    "Id": "C6A5AEAD-BCC2-4B48-B84A-B9D8168E8D7B",
+    "Product": "Tuver",
+    "SaleDate": "2026-01-11T00:00:00.000Z",
+    "CustomerName": "David Miller",
+    "CustomerPhone": "",
+    "Area": "Jahangirpura",
+    "Weight": "5kg",
+    "Quantity": 350,
+    "TotalPackages": 350,
+    "TotalPrice": 700,
+    "PaymentStatus": "Paid",
+    "Notes": "",
+    "CreatedAt": "2026-01-10T07:52:39.706Z"
+  }
+]
