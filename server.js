@@ -9,7 +9,7 @@ const { Pool } = pg;
 // Construct Supabase Postgres Connection String
 const DB_PASSWORD = process.env.DB_PASSWORD || 'AmbeFarm@7479#$';
 const encodedPassword = encodeURIComponent(DB_PASSWORD);
-const connectionString = `postgresql://postgres:${encodedPassword}@db.nphpuqrocobyoofkapdy.supabase.co:5432/postgres`;
+const connectionString = `postgresql://postgres.nphpuqrocobyoofkapdy:${encodedPassword}@aws-1-ap-northeast-2.pooler.supabase.com:5432/postgres`;
 
 // Initialize Postgres Pool
 const pool = new Pool({
