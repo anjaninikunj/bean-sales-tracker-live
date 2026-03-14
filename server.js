@@ -6,9 +6,10 @@ import { fileURLToPath } from 'url';
 
 const { Pool } = pg;
 
-// Construct Supabase Postgres Connection String using the Vercel password
+// Construct Supabase Postgres Connection String
 const DB_PASSWORD = process.env.DB_PASSWORD || 'AmbeFarm@7479#$';
-const connectionString = `postgresql://postgres:${DB_PASSWORD}@db.nphpuqrocobyoofkapdy.supabase.co:5432/postgres`;
+const encodedPassword = encodeURIComponent(DB_PASSWORD);
+const connectionString = `postgresql://postgres:${encodedPassword}@db.nphpuqrocobyoofkapdy.supabase.co:5432/postgres`;
 
 // Initialize Postgres Pool
 const pool = new Pool({
