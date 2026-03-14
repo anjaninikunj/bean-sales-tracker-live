@@ -37,18 +37,43 @@ const Dashboard: React.FC = () => {
     fetchOrders();
   }, []);
 
+  const [timeFilter, setTimeFilter] = useState<'all' | 'currentMonth' | 'lastMonth'>('all');
+
+  const filteredOrders = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    return orders.filter(o => {
+      if (timeFilter === 'all') return true;
+      const orderDate = new Date(o.date);
+      const orderMonth = orderDate.getMonth();
+      const orderYear = orderDate.getFullYear();
+
+      if (timeFilter === 'currentMonth') {
+        return orderMonth === currentMonth && orderYear === currentYear;
+      }
+      if (timeFilter === 'lastMonth') {
+        return orderMonth === lastMonth && orderYear === lastMonthYear;
+      }
+      return true;
+    });
+  }, [orders, timeFilter]);
+
   const metrics = useMemo(() => {
-    const totalSales = orders.reduce((sum, o) => sum + o.totalPrice, 0);
-    const paidAmount = orders.filter(o => o.paymentStatus === PaymentStatus.PAID).reduce((sum, o) => sum + o.totalPrice, 0);
-    const pendingAmount = orders.filter(o => o.paymentStatus === PaymentStatus.PENDING).reduce((sum, o) => sum + o.totalPrice, 0);
-    const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
-    const uniqueCustomers = new Set(orders.map(o => o.customerName)).size;
+    const totalSales = filteredOrders.reduce((sum, o) => sum + o.totalPrice, 0);
+    const paidAmount = filteredOrders.filter(o => o.paymentStatus === PaymentStatus.PAID).reduce((sum, o) => sum + o.totalPrice, 0);
+    const pendingAmount = filteredOrders.filter(o => o.paymentStatus === PaymentStatus.PENDING).reduce((sum, o) => sum + o.totalPrice, 0);
+    const totalQty = filteredOrders.reduce((sum, o) => sum + o.quantity, 0);
+    const uniqueCustomers = new Set(filteredOrders.map(o => o.customerName)).size;
     return { totalSales, paidAmount, pendingAmount, totalQty, uniqueCustomers };
-  }, [orders]);
+  }, [filteredOrders]);
 
   const trendData = useMemo(() => {
     const data: Record<string, number> = {};
-    orders.forEach(o => {
+    filteredOrders.forEach(o => {
       data[o.date] = (data[o.date] || 0) + o.totalPrice;
     });
     return Object.entries(data)
@@ -58,15 +83,15 @@ const Dashboard: React.FC = () => {
         date: date.split('-').slice(1).reverse().join('/'), 
         value 
       }));
-  }, [orders]);
+  }, [filteredOrders]);
 
   const productPerformance = useMemo(() => {
     const data: Record<string, number> = {};
-    orders.forEach(o => {
+    filteredOrders.forEach(o => {
       data[o.product] = (data[o.product] || 0) + o.totalPrice;
     });
     return Object.entries(data).map(([name, value]) => ({ name, value }));
-  }, [orders]);
+  }, [filteredOrders]);
 
   const StatCard = ({ icon: Icon, label, value, subValue, color, iconColor }: any) => (
     <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 relative overflow-hidden group hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
@@ -143,13 +168,23 @@ const Dashboard: React.FC = () => {
           <h1 className="text-4xl font-black text-slate-900 tracking-tighter">Market Overview</h1>
           <p className="text-slate-500 font-medium mt-1">Operational intelligence for your bean crop enterprise.</p>
         </div>
-        <div className="flex flex-col items-end">
-           <div className="flex items-center space-x-2 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100 mb-2">
+        <div className="flex flex-col items-start md:items-end gap-3">
+           <div className="flex items-center space-x-2 bg-indigo-50 px-4 py-2 rounded-2xl border border-indigo-100">
              <Server size={14} className="text-indigo-600" />
              <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest truncate max-w-[200px]">
                 API: {API_BASE_URL.replace('https://', '')}
              </span>
            </div>
+           
+           <select 
+             value={timeFilter}
+             onChange={(e) => setTimeFilter(e.target.value as any)}
+             className="bg-white border-2 border-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-widest rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-emerald-500/20 shadow-sm appearance-none cursor-pointer hover:border-emerald-300 transition-colors"
+           >
+             <option value="all">🕒 All Time History</option>
+             <option value="currentMonth">📅 Current Month</option>
+             <option value="lastMonth">⏳ Last Month</option>
+           </select>
         </div>
       </div>
 

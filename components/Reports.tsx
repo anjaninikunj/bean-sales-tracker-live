@@ -9,8 +9,8 @@ import { getSalesInsight } from '../services/gemini';
 const Reports: React.FC = () => {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  // Default to empty string to show all historical records unless date is selected
-  const [filterDate, setFilterDate] = useState('');
+  // Default to today's date instead of all historical records
+  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterArea, setFilterArea] = useState<string>('All');
   const [filterProduct, setFilterProduct] = useState<string>('All');
   const [filterStatus, setFilterStatus] = useState<string>('All');

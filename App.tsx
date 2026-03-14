@@ -88,22 +88,26 @@ const Navigation = () => {
   );
 };
 
-const MobileNav = () => (
-  <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-3 z-50">
-    <Link to="/" className="flex flex-col items-center text-slate-500 text-xs">
-      <LayoutDashboard size={24} />
-      <span>Dash</span>
-    </Link>
-    <Link to="/order" className="flex flex-col items-center text-emerald-600 text-xs font-bold">
-      <ShoppingCart size={24} />
-      <span>New Order</span>
-    </Link>
-    <Link to="/reports" className="flex flex-col items-center text-slate-500 text-xs">
-      <FileText size={24} />
-      <span>Reports</span>
-    </Link>
-  </div>
-);
+const MobileNav = () => {
+  const location = useLocation();
+  const path = location.pathname;
+  return (
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 flex justify-around p-3 z-50">
+      <Link to="/" className={`flex flex-col items-center text-xs ${path === '/' ? 'text-emerald-600 font-bold' : 'text-slate-500'}`}>
+        <LayoutDashboard size={24} />
+        <span>Dash</span>
+      </Link>
+      <Link to="/order" className={`flex flex-col items-center text-xs ${path === '/order' ? 'text-emerald-600 font-bold' : 'text-slate-500'}`}>
+        <ShoppingCart size={24} />
+        <span>New Order</span>
+      </Link>
+      <Link to="/reports" className={`flex flex-col items-center text-xs ${path === '/reports' ? 'text-emerald-600 font-bold' : 'text-slate-500'}`}>
+        <FileText size={24} />
+        <span>Reports</span>
+      </Link>
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   return (
