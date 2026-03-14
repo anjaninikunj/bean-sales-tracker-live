@@ -3,18 +3,12 @@ import { SaleOrder, PaymentStatus } from '../types';
 const CLOUD_URL = 'https://bean-sales-tracker-live.vercel.app'; // Update this to your exact Vercel URL if different!
 
 const getApiBaseUrl = (): string => {
-  const env = (import.meta as any).env;
-  if (env && env.VITE_API_URL) return env.VITE_API_URL;
-
-  // If running in browser natively on Vercel, use relative URL (so it dynamically hits the correct API)
-  if (typeof window !== 'undefined' &&
-    !window.location.hostname.includes('localhost') &&
-    !window.location.protocol.includes('capacitor') &&
-    !window.location.protocol.includes('file')) {
+  // 1. If running natively in the browser on Vercel, hit the relative backend
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
     return '';
   }
 
-  // GLOBAL CLOUD DEPLOYMENT ADDRESS (For APK / Mobile app to connect to)
+  // 2. If running on Mobile (APK) or localhost, hit the global Vercel cloud URL
   return CLOUD_URL;
 };
 
