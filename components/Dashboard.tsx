@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { TrendingUp, Package, CheckCircle2, Clock, ArrowUpRight, Leaf, Users, MapPin, Server } from 'lucide-react';
-import { getOrders } from '../services/storage';
+import { getOrders, API_BASE_URL } from '../services/storage';
 import { SaleOrder, PaymentStatus } from '../types';
 
 const COLORS = ['#10b981', '#f59e0b', '#3b82f6', '#8b5cf6', '#ec4899'];
@@ -11,16 +11,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   
-  const getApiUrl = (): string => {
-    const env = (import.meta as any).env;
-    if (env && env.VITE_API_URL) return env.VITE_API_URL;
-    
-    // GLOBAL RENDER DEPLOYMENT ADDRESS
-    return 'https://bean-sales-tracker-live-1.onrender.com';
-  };
   
-  const API_BASE_URL = getApiUrl();
-
   useEffect(() => {
     const fetchOrders = async () => {
       try {

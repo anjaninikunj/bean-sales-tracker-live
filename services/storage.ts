@@ -18,7 +18,7 @@ const getApiBaseUrl = (): string => {
   return CLOUD_URL;
 };
 
-const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl();
 
 export const saveOrder = async (order: SaleOrder): Promise<void> => {
   try {

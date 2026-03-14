@@ -4,6 +4,7 @@ import { LayoutDashboard, FileText, ShoppingCart, Leaf, Cloud, CloudOff, ShieldC
 import OrderForm from './components/OrderForm';
 import Reports from './components/Reports';
 import Dashboard from './components/Dashboard';
+import { API_BASE_URL } from './services/storage';
 
 const SidebarLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: string }) => {
   const location = useLocation();
@@ -26,14 +27,6 @@ const SidebarLink = ({ to, icon: Icon, label }: { to: string, icon: any, label: 
 
 const Navigation = () => {
   const [dbStatus, setDbStatus] = useState<'connected' | 'error' | 'loading'>('loading');
-  
-  const getApiUrl = () => {
-    // HARDCODED FOR MOBILE HOTSPOT CONNECTIVITY
-    // Laptop IP: 10.94.108.148
-    return 'http://10.94.108.148:3001';
-  };
-  
-  const API_BASE_URL = getApiUrl();
 
   useEffect(() => {
     const checkStatus = async () => {
