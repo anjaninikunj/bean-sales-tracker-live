@@ -74,7 +74,7 @@ const Navigation = () => {
         }`}>
           {dbStatus === 'connected' ? <Cloud size={18} /> : <CloudOff size={18} />}
           <div className="flex flex-col">
-            <span className="text-[10px] font-black uppercase tracking-widest">Azure Cloud</span>
+            <span className="text-[10px] font-black uppercase tracking-widest">Supabase Cloud</span>
             <span className="text-xs font-bold">{dbStatus === 'connected' ? 'Live & Synced' : 'Connecting...'}</span>
           </div>
         </div>
