@@ -55,10 +55,10 @@ export const getOrders = async (retries = 12): Promise<SaleOrder[]> => {
         weight: o.Weight || o.weight || '0',
         quantity: o.Quantity || o.quantity || 0,
         totalPackages: o.TotalPackages || o.totalPackages || 0,
-        totalPrice: typeof o.TotalPrice === 'string' ? parseFloat(o.TotalPrice) : (Number(o.TotalPrice) || 0),
+        totalPrice: typeof (o.TotalPrice ?? o.totalPrice) === 'string' ? parseFloat(o.TotalPrice ?? o.totalPrice) : (Number(o.TotalPrice ?? o.totalPrice) || 0),
         paymentStatus: (o.PaymentStatus || o.paymentStatus || PaymentStatus.PAID) as PaymentStatus,
         notes: o.Notes || o.notes || '',
-        createdAt: o.CreatedAt ? new Date(o.CreatedAt).getTime() : Date.now()
+        createdAt: (o.CreatedAt || o.createdAt) ? new Date(o.CreatedAt || o.createdAt).getTime() : Date.now()
       })).filter(item => item !== null) as SaleOrder[];
     } catch (error: any) {
       console.error(`Attempt ${i + 1} failed:`, error.message);
