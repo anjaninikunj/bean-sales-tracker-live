@@ -40,47 +40,49 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-let pool;
+let poolPromise;
 
-async function connectToDatabase() {
+async function getDbConnection() {
+    if (poolPromise) return poolPromise;
     try {
         console.log('📡 Azure SQL: Attempting Connection...');
-        pool = await sql.connect(dbConfig);
-        console.log('✅ Azure SQL: Connected');
-
-        // Initialize Table
-        await pool.request().query(`
-            IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BeanSales' AND xtype='U')
-            BEGIN
-                CREATE TABLE BeanSales (
-                    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-                    Product NVARCHAR(50) NOT NULL,
-                    SaleDate DATE NOT NULL,
-                    CustomerName NVARCHAR(200),
-                    CustomerPhone NVARCHAR(20),
-                    Area NVARCHAR(100) NOT NULL,
-                    Weight NVARCHAR(20) NOT NULL,
-                    Quantity INT NOT NULL,
-                    TotalPackages INT NOT NULL,
-                    TotalPrice DECIMAL(18, 2) NOT NULL,
-                    PaymentStatus NVARCHAR(20) DEFAULT 'Paid',
-                    Notes NVARCHAR(MAX),
-                    CreatedAt DATETIME2 DEFAULT GETDATE()
-                )
-            END
-        `);
+        poolPromise = sql.connect(dbConfig).then(async (pool) => {
+            console.log('✅ Azure SQL: Connected');
+            // Initialize Table
+            await pool.request().query(`
+                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BeanSales' AND xtype='U')
+                BEGIN
+                    CREATE TABLE BeanSales (
+                        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+                        Product NVARCHAR(50) NOT NULL,
+                        SaleDate DATE NOT NULL,
+                        CustomerName NVARCHAR(200),
+                        CustomerPhone NVARCHAR(20),
+                        Area NVARCHAR(100) NOT NULL,
+                        Weight NVARCHAR(20) NOT NULL,
+                        Quantity INT NOT NULL,
+                        TotalPackages INT NOT NULL,
+                        TotalPrice DECIMAL(18, 2) NOT NULL,
+                        PaymentStatus NVARCHAR(20) DEFAULT 'Paid',
+                        Notes NVARCHAR(MAX),
+                        CreatedAt DATETIME2 DEFAULT GETDATE()
+                    )
+                END
+            `);
+            return pool;
+        });
+        return await poolPromise;
     } catch (err) {
+        poolPromise = null;
         console.error('❌ DB CONNECTION FAILED:', err.message);
-        console.warn('💡 HELP: Check your Azure SQL Firewall (Allow your IP) and ensure the database is not paused/suspended.');
-        // Retry connection every 10 seconds
-        setTimeout(connectToDatabase, 10000);
+        throw err;
     }
 }
 
 app.get('/api/orders', async (req, res) => {
     console.log(`📱 [MOBILE] GET Request from: ${req.ip}`);
     try {
-        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        const pool = await getDbConnection();
         const result = await pool.request().query('SELECT * FROM BeanSales ORDER BY SaleDate DESC, CreatedAt DESC');
         console.log(`✅ [MOBILE] Found ${result.recordset.length} records. Sending to phone...`);
         res.json(result.recordset);
@@ -93,7 +95,7 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
     const { product, date, area, weight, quantity, totalPrice, customerName, customerPhone, paymentStatus, notes } = req.body;
     try {
-        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        const pool = await getDbConnection();
         await pool.request()
             .input('product', sql.NVarChar, product)
             .input('date', sql.Date, date)
@@ -121,7 +123,7 @@ app.put('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
     const { product, date, area, weight, quantity, totalPrice, customerName, customerPhone, paymentStatus, notes } = req.body;
     try {
-        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        const pool = await getDbConnection();
         await pool.request()
             .input('id', sql.UniqueIdentifier, id)
             .input('product', sql.NVarChar, product)
@@ -160,7 +162,7 @@ app.put('/api/orders/:id', async (req, res) => {
 app.delete('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        const pool = await getDbConnection();
         await pool.request()
             .input('id', sql.UniqueIdentifier, id)
             .query('DELETE FROM BeanSales WHERE Id = @id');
@@ -173,7 +175,7 @@ app.delete('/api/orders/:id', async (req, res) => {
 // Clear all orders (Reset Database)
 app.delete('/api/orders', async (req, res) => {
     try {
-        if (!pool) return res.status(503).json({ error: 'DB Connecting...' });
+        const pool = await getDbConnection();
         await pool.request().query('DELETE FROM BeanSales');
         res.json({ success: true });
     } catch (err) {
@@ -181,8 +183,13 @@ app.delete('/api/orders', async (req, res) => {
     }
 });
 
-app.get('/health', (req, res) => {
-    res.status(200).json({ status: pool ? 'connected' : 'connecting' });
+app.get('/health', async (req, res) => {
+    try {
+        await getDbConnection();
+        res.status(200).json({ status: 'connected' });
+    } catch (err) {
+        res.status(503).json({ status: 'error', error: err.message });
+    }
 });
 
 // Handle React Routing, return all requests to React app
@@ -190,8 +197,18 @@ app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, async () => {
-    console.log(`🚀 Production API Server running on port ${PORT}`);
-    await connectToDatabase();
-});
+// Export app for Vercel Serverless
+export default app;
+
+// For Local/Render Server Startup (Start only if run directly via node script)
+if (!process.env.VERCEL) {
+    const PORT = process.env.PORT || 3001;
+    app.listen(PORT, async () => {
+        console.log(`🚀 API Server running on port ${PORT}`);
+        try {
+            await getDbConnection();
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}

@@ -15,8 +15,8 @@ const Dashboard: React.FC = () => {
     const env = (import.meta as any).env;
     if (env && env.VITE_API_URL) return env.VITE_API_URL;
     
-    // Defaulting to laptop IP for final localized test
-    return 'http://10.94.108.148:3001';
+    // GLOBAL RENDER DEPLOYMENT ADDRESS
+    return 'https://bean-sales-tracker-live-1.onrender.com';
   };
   
   const API_BASE_URL = getApiUrl();
@@ -99,23 +99,23 @@ const Dashboard: React.FC = () => {
           <div className="flex items-center space-x-2 my-2 bg-emerald-50 px-4 py-2 rounded-full">
             <div className={`w-2 h-2 ${errorStatus ? 'bg-red-500' : 'bg-emerald-500'} rounded-full animate-ping`}></div>
             <span className={`${errorStatus ? 'text-red-700' : 'text-emerald-700'} font-black text-[10px] tracking-widest uppercase`}>
-              {errorStatus ? `CONNECTION ERROR: ${errorStatus}` : 'Hotspot Link Version 1.7'}
+              {errorStatus ? `OFFLINE: ${errorStatus}` : 'BeanTracker Cloud v2.0'}
             </span>
           </div>
           <p className="text-slate-500 max-w-sm mt-3 font-medium text-center">
-            {errorStatus ? "Please ensure npm start is running and your phone is on the hotspot." : "If you see no records, click the button below to retry the connection."}
+            {errorStatus ? "Checking connection to Cloud..." : "You are now live! Your data is synched wirelessly across all locations."}
           </p>
           <a
             href="/#/order"
             className="mt-8 bg-emerald-600 text-white px-8 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-emerald-700 transition shadow-lg shadow-emerald-100"
           >
-            Create First Sale Entry
+            Create New Entry
           </a>
           <div className="mt-8 pt-8 border-t border-slate-50 w-full flex flex-col items-center justify-center space-y-2">
             <span className="flex items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
-               <Server size={10} className="mr-1" /> ACTIVE IP: 10.94.108.148:3001
+               <Server size={10} className="mr-1" /> CLOUD MODE: ON
             </span>
-            <span className="text-[8px] font-bold text-slate-300 uppercase">RETRY SERVER: NPM START</span>
+            <span className="text-[8px] font-bold text-slate-300 uppercase">LOCATION AGNOSTIC • MULTI-USER</span>
           </div>
         </div>
       </div>
