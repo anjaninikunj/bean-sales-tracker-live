@@ -22,13 +22,14 @@
     "cors": "^2.8.5",
     "express": "^5.0.0",
     "lucide-react": "^0.474.0",
-    "mssql": "^12.2.0",
+    "pg": "^8.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.1",
     "recharts": "^2.15.0"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.10.0",

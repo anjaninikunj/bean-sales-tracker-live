@@ -1,79 +1,65 @@
-
 import express from 'express';
-import sql from 'mssql';
+import pg from 'pg';
 import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// These will be filled by Render.com Environment Variables
-const dbConfig = {
-    user: process.env.DB_USER || 'beanadmin',
-    password: process.env.DB_PASSWORD || 'AmbeFarm@7479#$',
-    server: process.env.DB_SERVER || 'beantracker-server-ambe-1018.database.windows.net',
-    database: process.env.DB_NAME || 'beantracker-server-ambe',
-    port: 1433,
-    options: {
-        encrypt: true,
-        trustServerCertificate: false,
-        enableArithAbort: true,
-        connectTimeout: 30000
-    },
-    pool: {
-        max: 10,
-        min: 0,
-        idleTimeoutMillis: 30000
-    }
-};
+const { Pool } = pg;
+
+// Construct Supabase Postgres Connection String using the Vercel password
+const DB_PASSWORD = process.env.DB_PASSWORD || 'AmbeFarm@7479#$';
+const connectionString = `postgresql://postgres:${DB_PASSWORD}@db.nphpuqrocobyoofkapdy.supabase.co:5432/postgres`;
+
+// Initialize Postgres Pool
+const pool = new Pool({
+    connectionString,
+    ssl: { rejectUnauthorized: false },
+    max: 10,
+    idleTimeoutMillis: 30000
+});
 
 const app = express();
 app.set('trust proxy', 1);
 app.use(express.json());
 
-// Serve static files from the React build
-import path from 'path';
-import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // CORS configuration for production
 app.use(cors({
-    origin: '*', // For production, replace with your Vercel URL
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
 
-let poolPromise;
+let isDbInitialized = false;
 
-async function getDbConnection() {
-    if (poolPromise) return poolPromise;
+async function initDb() {
+    if (isDbInitialized) return;
     try {
-        console.log('📡 Azure SQL: Attempting Connection...');
-        poolPromise = sql.connect(dbConfig).then(async (pool) => {
-            console.log('✅ Azure SQL: Connected');
-            // Initialize Table
-            await pool.request().query(`
-                IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='BeanSales' AND xtype='U')
-                BEGIN
-                    CREATE TABLE BeanSales (
-                        Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
-                        Product NVARCHAR(50) NOT NULL,
-                        SaleDate DATE NOT NULL,
-                        CustomerName NVARCHAR(200),
-                        CustomerPhone NVARCHAR(20),
-                        Area NVARCHAR(100) NOT NULL,
-                        Weight NVARCHAR(20) NOT NULL,
-                        Quantity INT NOT NULL,
-                        TotalPackages INT NOT NULL,
-                        TotalPrice DECIMAL(18, 2) NOT NULL,
-                        PaymentStatus NVARCHAR(20) DEFAULT 'Paid',
-                        Notes NVARCHAR(MAX),
-                        CreatedAt DATETIME2 DEFAULT GETDATE()
-                    )
-                END
-            `);
-            return pool;
-        });
-        return await poolPromise;
+        console.log('📡 Supabase Postgres: Attempting Connection...');
+        
+        // Postgres syntax for creating table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS "BeanSales" (
+                "Id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                "Product" VARCHAR(50) NOT NULL,
+                "SaleDate" DATE NOT NULL,
+                "CustomerName" VARCHAR(200),
+                "CustomerPhone" VARCHAR(20),
+                "Area" VARCHAR(100) NOT NULL,
+                "Weight" VARCHAR(20) NOT NULL,
+                "Quantity" INT NOT NULL,
+                "TotalPackages" INT NOT NULL,
+                "TotalPrice" NUMERIC(18, 2) NOT NULL,
+                "PaymentStatus" VARCHAR(20) DEFAULT 'Paid',
+                "Notes" TEXT,
+                "CreatedAt" TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        console.log('✅ Supabase Postgres: Connected and Table Initialized');
+        isDbInitialized = true;
     } catch (err) {
-        poolPromise = null;
         console.error('❌ DB CONNECTION FAILED:', err.message);
         throw err;
     }
@@ -82,10 +68,28 @@ async function getDbConnection() {
 app.get('/api/orders', async (req, res) => {
     console.log(`📱 [MOBILE] GET Request from: ${req.ip}`);
     try {
-        const pool = await getDbConnection();
-        const result = await pool.request().query('SELECT * FROM BeanSales ORDER BY SaleDate DESC, CreatedAt DESC');
-        console.log(`✅ [MOBILE] Found ${result.recordset.length} records. Sending to phone...`);
-        res.json(result.recordset);
+        await initDb();
+        const result = await pool.query('SELECT * FROM "BeanSales" ORDER BY "SaleDate" DESC, "CreatedAt" DESC');
+        console.log(`✅ [MOBILE] Found ${result.rows.length} records. Sending to phone...`);
+        
+        // Map postgres 'Id' back to camelCase 'id' for JSON response
+        const orders = result.rows.map(row => ({
+            id: row.Id,
+            product: row.Product,
+            date: new Date(row.SaleDate).toISOString().split('T')[0],
+            customerName: row.CustomerName,
+            customerPhone: row.CustomerPhone,
+            area: row.Area,
+            weight: row.Weight,
+            quantity: row.Quantity,
+            totalPackages: row.TotalPackages,
+            totalPrice: Number(row.TotalPrice),
+            paymentStatus: row.PaymentStatus,
+            notes: row.Notes,
+            createdAt: row.CreatedAt
+        }));
+        
+        res.json(orders);
     } catch (err) {
         console.error('❌ [MOBILE] Fetch Error:', err.message);
         res.status(500).json({ error: err.message });
@@ -95,23 +99,12 @@ app.get('/api/orders', async (req, res) => {
 app.post('/api/orders', async (req, res) => {
     const { product, date, area, weight, quantity, totalPrice, customerName, customerPhone, paymentStatus, notes } = req.body;
     try {
-        const pool = await getDbConnection();
-        await pool.request()
-            .input('product', sql.NVarChar, product)
-            .input('date', sql.Date, date)
-            .input('customerName', sql.NVarChar, customerName)
-            .input('customerPhone', sql.NVarChar, customerPhone)
-            .input('area', sql.NVarChar, area)
-            .input('weight', sql.NVarChar, weight)
-            .input('quantity', sql.Int, quantity)
-            .input('totalPackages', sql.Int, quantity)
-            .input('totalPrice', sql.Decimal(18, 2), totalPrice)
-            .input('paymentStatus', sql.NVarChar, paymentStatus)
-            .input('notes', sql.NVarChar, notes)
-            .query(`
-                INSERT INTO BeanSales (Product, SaleDate, CustomerName, CustomerPhone, Area, Weight, Quantity, TotalPackages, TotalPrice, PaymentStatus, Notes)
-                VALUES (@product, @date, @customerName, @customerPhone, @area, @weight, @quantity, @totalPackages, @totalPrice, @paymentStatus, @notes)
-            `);
+        await initDb();
+        await pool.query(`
+            INSERT INTO "BeanSales" ("Product", "SaleDate", "CustomerName", "CustomerPhone", "Area", "Weight", "Quantity", "TotalPackages", "TotalPrice", "PaymentStatus", "Notes")
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        `, [product, date, customerName, customerPhone, area, weight, quantity, quantity, totalPrice, paymentStatus, notes]);
+        
         res.status(201).json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -123,35 +116,23 @@ app.put('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
     const { product, date, area, weight, quantity, totalPrice, customerName, customerPhone, paymentStatus, notes } = req.body;
     try {
-        const pool = await getDbConnection();
-        await pool.request()
-            .input('id', sql.UniqueIdentifier, id)
-            .input('product', sql.NVarChar, product)
-            .input('date', sql.Date, date)
-            .input('customerName', sql.NVarChar, customerName)
-            .input('customerPhone', sql.NVarChar, customerPhone)
-            .input('area', sql.NVarChar, area)
-            .input('weight', sql.NVarChar, weight)
-            .input('quantity', sql.Int, quantity)
-            .input('totalPackages', sql.Int, quantity)
-            .input('totalPrice', sql.Decimal(18, 2), totalPrice)
-            .input('paymentStatus', sql.NVarChar, paymentStatus)
-            .input('notes', sql.NVarChar, notes)
-            .query(`
-                UPDATE BeanSales
-                SET Product = @product,
-                    SaleDate = @date,
-                    CustomerName = @customerName,
-                    CustomerPhone = @customerPhone,
-                    Area = @area,
-                    Weight = @weight,
-                    Quantity = @quantity,
-                    TotalPackages = @totalPackages,
-                    TotalPrice = @totalPrice,
-                    PaymentStatus = @paymentStatus,
-                    Notes = @notes
-                WHERE Id = @id
-            `);
+        await initDb();
+        await pool.query(`
+            UPDATE "BeanSales"
+            SET "Product" = $1,
+                "SaleDate" = $2,
+                "CustomerName" = $3,
+                "CustomerPhone" = $4,
+                "Area" = $5,
+                "Weight" = $6,
+                "Quantity" = $7,
+                "TotalPackages" = $8,
+                "TotalPrice" = $9,
+                "PaymentStatus" = $10,
+                "Notes" = $11
+            WHERE "Id" = $12
+        `, [product, date, customerName, customerPhone, area, weight, quantity, quantity, totalPrice, paymentStatus, notes, id]);
+        
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -162,10 +143,8 @@ app.put('/api/orders/:id', async (req, res) => {
 app.delete('/api/orders/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const pool = await getDbConnection();
-        await pool.request()
-            .input('id', sql.UniqueIdentifier, id)
-            .query('DELETE FROM BeanSales WHERE Id = @id');
+        await initDb();
+        await pool.query('DELETE FROM "BeanSales" WHERE "Id" = $1', [id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -175,8 +154,8 @@ app.delete('/api/orders/:id', async (req, res) => {
 // Clear all orders (Reset Database)
 app.delete('/api/orders', async (req, res) => {
     try {
-        const pool = await getDbConnection();
-        await pool.request().query('DELETE FROM BeanSales');
+        await initDb();
+        await pool.query('DELETE FROM "BeanSales"');
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -185,7 +164,8 @@ app.delete('/api/orders', async (req, res) => {
 
 app.get('/health', async (req, res) => {
     try {
-        await getDbConnection();
+        await initDb();
+        await pool.query('SELECT 1');
         res.status(200).json({ status: 'connected' });
     } catch (err) {
         res.status(503).json({ status: 'error', error: err.message });
@@ -206,7 +186,7 @@ if (!process.env.VERCEL) {
     app.listen(PORT, async () => {
         console.log(`🚀 API Server running on port ${PORT}`);
         try {
-            await getDbConnection();
+            await initDb();
         } catch (e) {
             console.error(e);
         }
