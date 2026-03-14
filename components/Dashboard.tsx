@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
     fetchOrders();
   }, []);
 
-  const [timeFilter, setTimeFilter] = useState<'all' | 'currentMonth' | 'lastMonth'>('all');
+  const [timeFilter, setTimeFilter] = useState<'all' | 'currentMonth' | 'lastMonth'>('currentMonth');
 
   const filteredOrders = useMemo(() => {
     const now = new Date();
@@ -181,9 +181,9 @@ const Dashboard: React.FC = () => {
              onChange={(e) => setTimeFilter(e.target.value as any)}
              className="bg-white border-2 border-emerald-100 text-emerald-800 text-xs font-black uppercase tracking-widest rounded-xl px-4 py-2.5 outline-none focus:ring-4 focus:ring-emerald-500/20 shadow-sm appearance-none cursor-pointer hover:border-emerald-300 transition-colors"
            >
-             <option value="all">🕒 All Time History</option>
              <option value="currentMonth">📅 Current Month</option>
              <option value="lastMonth">⏳ Last Month</option>
+             <option value="all">🕒 All Transactions</option>
            </select>
         </div>
       </div>

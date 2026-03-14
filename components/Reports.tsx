@@ -9,8 +9,8 @@ import { getSalesInsight } from '../services/gemini';
 const Reports: React.FC = () => {
   const [orders, setOrders] = useState<SaleOrder[]>([]);
   const [loading, setLoading] = useState(true);
-  // Default to today's date instead of all historical records
-  const [filterDate, setFilterDate] = useState(new Date().toISOString().split('T')[0]);
+  const [timeFilter, setTimeFilter] = useState<'today' | 'currentMonth' | 'lastMonth' | 'all' | 'custom'>('currentMonth');
+  const [customDate, setCustomDate] = useState(new Date().toISOString().split('T')[0]);
   const [filterArea, setFilterArea] = useState<string>('All');
   const [filterProduct, setFilterProduct] = useState<string>('All');
   const [filterStatus, setFilterStatus] = useState<string>('All');
@@ -35,7 +35,28 @@ const Reports: React.FC = () => {
   }, []);
 
   const filteredOrders = orders.filter(order => {
-    const matchesDate = !filterDate || order.date === filterDate;
+    const orderDateObj = new Date(order.date);
+    const orderMonth = orderDateObj.getMonth();
+    const orderYear = orderDateObj.getFullYear();
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+
+    let matchesDate = true;
+    if (timeFilter === 'today') {
+      matchesDate = order.date === now.toISOString().split('T')[0];
+    } else if (timeFilter === 'currentMonth') {
+      matchesDate = orderMonth === currentMonth && orderYear === currentYear;
+    } else if (timeFilter === 'lastMonth') {
+      matchesDate = orderMonth === lastMonth && orderYear === lastMonthYear;
+    } else if (timeFilter === 'custom') {
+      matchesDate = !customDate || order.date === customDate;
+    } else if (timeFilter === 'all') {
+      matchesDate = true;
+    }
+
     const matchesArea = filterArea === 'All' || order.area === filterArea;
     const matchesProduct = filterProduct === 'All' || order.product === filterProduct;
     const matchesStatus = filterStatus === 'All' || order.paymentStatus === filterStatus;
@@ -170,13 +191,28 @@ const Reports: React.FC = () => {
         </div>
         <div className="relative">
           <Calendar size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all"
-          />
+          <select
+            value={timeFilter}
+            onChange={(e) => setTimeFilter(e.target.value as any)}
+            className="w-full pl-10 pr-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all appearance-none"
+          >
+            <option value="today">Today</option>
+            <option value="currentMonth">Current month</option>
+            <option value="lastMonth">Last Month</option>
+            <option value="all">All Transactions</option>
+            <option value="custom">Custom Date...</option>
+          </select>
         </div>
+        {timeFilter === 'custom' && (
+          <div className="relative">
+            <input
+              type="date"
+              value={customDate}
+              onChange={(e) => setCustomDate(e.target.value)}
+              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border-transparent focus:bg-white focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 text-sm font-bold text-slate-900 transition-all"
+            />
+          </div>
+        )}
         <div className="relative">
           <Tag size={14} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
           <select
@@ -240,7 +276,7 @@ const Reports: React.FC = () => {
                       </div>
                       <p className="text-xl font-black tracking-tight text-slate-400">No matching records found.</p>
                       <button
-                        onClick={() => { setFilterDate(''); setFilterArea('All'); setFilterProduct('All'); setFilterStatus('All'); setSearchTerm(''); }}
+                        onClick={() => { setTimeFilter('today'); setFilterArea('All'); setFilterProduct('All'); setFilterStatus('All'); setSearchTerm(''); }}
                         className="mt-6 text-emerald-600 font-black text-xs uppercase tracking-widest hover:text-emerald-700 underline underline-offset-8 transition-all"
                       >
                         Reset Audit Parameters

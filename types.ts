@@ -7,6 +7,10 @@ export enum ProductType {
 }
 
 export enum AreaType {
+  AKU = 'Aku',
+  BHAVINI = 'Bhavini',
+  RAJANI = 'Rajani',
+  SONSAK = 'Sonsak',
   SURAT = 'Surat',
   JAHANGIRPURA = 'Jahangirpura',
   ADAJAN = 'Adajan',

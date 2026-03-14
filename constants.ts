@@ -2,25 +2,24 @@
 import { ProductType, WeightType, AreaType } from './types';
 
 export const AREAS = [
-  AreaType.SURAT, 
-  AreaType.JAHANGIRPURA, 
-  AreaType.ADAJAN, 
-  AreaType.PAL, 
-  AreaType.VESU
+  AreaType.AKU,
+  AreaType.BHAVINI,
+  AreaType.RAJANI,
+  AreaType.SONSAK,
+  AreaType.SURAT,
+  AreaType.JAHANGIRPURA,
 ];
 
 export const PRODUCTS = [
-  ProductType.PAPADI, 
+  ProductType.PAPADI,
   ProductType.TUVER,
-  ProductType.VAL,
   ProductType.CHOLI
 ];
 
 export const WEIGHTS = [
-  WeightType.W250G, 
-  WeightType.W500G, 
+  WeightType.W500G,
   WeightType.W1KG,
-  WeightType.W5KG
+  WeightType.W250G,
 ];
 
 export const PRICING: Record<ProductType, Record<WeightType, number>> = {
