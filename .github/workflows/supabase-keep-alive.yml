@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs at 00:00 every Monday and Thursday
     - cron: '0 0 * * 1,4'
-  workflow_dispatch: # This button lets you test it manually
+  workflow_dispatch:
 
 jobs:
   ping:
@@ -12,6 +12,6 @@ jobs:
     steps:
       - name: Send Keep-Alive Ping
         run: |
-          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/" \
+          curl -X GET "${{ secrets.SUPABASE_URL }}/rest/v1/BeanSales?select=id&limit=1" \
           -H "apikey: ${{ secrets.SUPABASE_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_KEY }}"
